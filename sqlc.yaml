@@ -1,0 +1,21 @@
+# Конфигурация для sqlc
+version: "2"
+
+sql:
+  # Настройка для PostgreSQL
+  - engine: "postgresql"
+    # Путь к директории с SQL-запросами
+    queries: "migrations/queries"
+    # Путь к файлам миграций/схемы БД
+    schema: "migrations/tables"
+    gen:
+      go:
+        # Название пакета сгенерированного кода
+        package: "database"
+        # Выходная директория для сгенерированного кода
+        out: "internal/modules/domains/repository"
+        # Переопределения типов
+        overrides:
+          - db_type: "vendor"
+            go_type:
+              type: "Vendor"
