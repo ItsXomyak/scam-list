@@ -1,4 +1,4 @@
-package params
+package repository
 
 import (
 	"database/sql"
