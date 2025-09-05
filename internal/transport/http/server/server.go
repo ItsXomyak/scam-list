@@ -31,9 +31,11 @@ func New(cfg config.Config, verifier Verifier, logger logger.Logger) *API {
 	addr := fmt.Sprintf(serverIPAddress, "0.0.0.0", cfg.HTTPServer.Port)
 
 	// Set Gin mode based on environment
-	if cfg.HTTPServer.GinEnviroment == "production" {
-		gin.SetMode(gin.ReleaseMode)
-	} else {
+	switch cfg.HTTPServer.GinEnviroment {
+	case gin.ReleaseMode, gin.DebugMode, gin.TestMode:
+		gin.SetMode(cfg.HTTPServer.GinEnviroment)
+	default:
+		logger.Warn(context.Background(), "invalid gin environment, setting to debug mode", "env", cfg.HTTPServer.GinEnviroment)
 		gin.SetMode(gin.DebugMode)
 	}
 

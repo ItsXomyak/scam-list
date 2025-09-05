@@ -32,7 +32,7 @@ type Postgres struct {
 	Pool PgxPool
 }
 
-func New(url string, pg *Postgres) (*Postgres, error) {
+func New(ctx context.Context, url string, pg *Postgres) (*Postgres, error) {
 	poolConfig, err := pgxpool.ParseConfig(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse config: %w", err)
@@ -41,7 +41,7 @@ func New(url string, pg *Postgres) (*Postgres, error) {
 	poolConfig.MaxConns = int32(pg.MaxPoolSize)
 
 	for pg.ConnAttempts > 0 {
-		pg.Pool, err = pgxpool.NewWithConfig(context.Background(), poolConfig)
+		pg.Pool, err = pgxpool.NewWithConfig(ctx, poolConfig)
 		if err == nil {
 			break
 		}
@@ -50,11 +50,14 @@ func New(url string, pg *Postgres) (*Postgres, error) {
 		time.Sleep(pg.ConnTimeout)
 		pg.ConnAttempts--
 	}
-
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
 	}
 
+	if err := pg.Pool.Ping(ctx); err != nil {
+		pg.Pool.Close()
+		return nil, fmt.Errorf("failed to ping postgres: %w", err)
+	}
 	return pg, nil
 }
 
