@@ -6,7 +6,16 @@ import (
 	"github.com/spf13/viper"
 )
 
-type Config struct{}
+type (
+	Config struct {
+		HTTPServer HTTPServer
+	}
+
+	HTTPServer struct {
+		GinEnviroment string
+		Port          int
+	}
+)
 
 func New(path string) (Config, error) {
 	viper.SetConfigFile(path)
