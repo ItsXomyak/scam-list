@@ -27,7 +27,7 @@ type handlers struct {
 	verify *handler.Verify
 }
 
-func New(cfg config.Config, logger logger.Logger) *API {
+func New(cfg config.Config, verifier Verifier, logger logger.Logger) *API {
 	addr := fmt.Sprintf(serverIPAddress, "0.0.0.0", cfg.HTTPServer.Port)
 
 	// Set Gin mode based on environment
@@ -37,8 +37,9 @@ func New(cfg config.Config, logger logger.Logger) *API {
 		gin.SetMode(gin.DebugMode)
 	}
 
+	// Initialize handlers
 	handlers := &handlers{
-		verify: handler.NewVerify(logger),
+		verify: handler.NewVerify(verifier, logger),
 	}
 
 	router := gin.New()
@@ -63,6 +64,8 @@ func New(cfg config.Config, logger logger.Logger) *API {
 func (a *API) Stop(ctx context.Context) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
+
+	ctx = logger.WithAction(ctx, "http_server_shutdown")
 
 	a.log.Debug(ctx, "shutting down HTTP server...", "address", a.addr)
 	if err := a.server.Shutdown(ctx); err != nil {
