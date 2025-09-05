@@ -29,6 +29,7 @@ func (a *API) HealthCheck(c *gin.Context) {
 		"status": "available",
 		"system_info": map[string]string{
 			"address": a.addr,
+			"mode":    gin.Mode(),
 		},
 	}
 

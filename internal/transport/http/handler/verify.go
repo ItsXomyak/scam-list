@@ -24,21 +24,20 @@ func NewVerify(verifier Verifier, log logger.Logger) *Verify {
 
 // VerifyDomain
 func (h *Verify) VerifyDomain(c *gin.Context) {
-	ctx := logger.WithAction(c.Request.Context(), "verify_domain")
+	ctx := logger.WithAction(c.Request.Context(), "handler_verify_domain")
 
 	domain := c.Param("domain")
 
 	if err := validateDomain(domain); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		badRequestResponse(c, err.Error())
 		return
 	}
 
-	err := h.verifier.VerifyDomain(domain)
+	// ProcessDomain
+	_, err := h.verifier.ProcessDomain(ctx, domain)
 	if err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "error verifying domain", err, "domain", domain)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+		internalErrorResponse(c, "internal server error")
 		return
 	}
 
