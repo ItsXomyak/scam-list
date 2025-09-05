@@ -28,13 +28,13 @@ func ToDBCreateDomainParams(params *entity.CreateDomainParams) CreateDomainParam
 func ToDBGetDomainsByRiskScoreParams(params *entity.GetDomainsByRiskScoreParams) GetDomainsByRiskScoreParams {
 	return GetDomainsByRiskScoreParams{
 		RiskScore:   stringToSqlNullString(params.RiskScore),
-		RiskScore_2: stringToSqlNullString(params.RiscScore2), // Обратите внимание на разницу в именах
+		RiskScore_2: stringToSqlNullString(params.RiscScore2), 
 		Limit:       params.Limit,
 		Offset:      params.Offset,
 	}
 }
 
-// GetDomainsByStatusParams (добавьте в entity если нужно)
+// GetDomainsByStatusParams 
 func ToDBGetDomainsByStatusParams(status string, limit, offset int32) GetDomainsByStatusParams {
 	return GetDomainsByStatusParams{
 		Status: status,
