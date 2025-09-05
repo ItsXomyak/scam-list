@@ -6,7 +6,7 @@ import (
 	"github.com/sqlc-dev/pqtype"
 )
 
-type СreateDomainParams struct {
+type CreateDomainParams struct {
 	Domain             string
 	CompanyName        sql.NullString
 	Country            sql.NullString

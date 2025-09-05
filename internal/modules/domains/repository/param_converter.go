@@ -1,14 +1,13 @@
-package converters
+package repository
 
 import (
 	"github.com/sqlc-dev/pqtype"
 
 	"github.com/ItsXomyak/scam-list/internal/modules/domains/entity"
-	"github.com/ItsXomyak/scam-list/internal/modules/domains/repository"
 )
 
-func ToDBCreateDomainParams(params *entity.CreateDomainParams) *repository.СreateDomainParams {
-	return &repository.СreateDomainParams{
+func ToDBCreateDomainParams(params *entity.CreateDomainParams) CreateDomainParams {
+	return CreateDomainParams{
 		Domain:             params.Domain,
 		CompanyName:        stringToSqlNullString(params.CompanyName),
 		Country:            stringToSqlNullString(params.Country),
@@ -26,8 +25,8 @@ func ToDBCreateDomainParams(params *entity.CreateDomainParams) *repository.Сrea
 }
 
 // GetDomainsByRiskScoreParams
-func ToDBGetDomainsByRiskScoreParams(params *entity.GetDomainsByRiskScoreParams) repository.GetDomainsByRiskScoreParams {
-	return repository.GetDomainsByRiskScoreParams{
+func ToDBGetDomainsByRiskScoreParams(params *entity.GetDomainsByRiskScoreParams) GetDomainsByRiskScoreParams {
+	return GetDomainsByRiskScoreParams{
 		RiskScore:   stringToSqlNullString(params.RiskScore),
 		RiskScore_2: stringToSqlNullString(params.RiscScore2), // Обратите внимание на разницу в именах
 		Limit:       params.Limit,
@@ -36,25 +35,33 @@ func ToDBGetDomainsByRiskScoreParams(params *entity.GetDomainsByRiskScoreParams)
 }
 
 // GetDomainsByStatusParams (добавьте в entity если нужно)
-func ToDBGetDomainsByStatusParams(status string, limit, offset int32) repository.GetDomainsByStatusParams {
-	return repository.GetDomainsByStatusParams{
+func ToDBGetDomainsByStatusParams(status string, limit, offset int32) GetDomainsByStatusParams {
+	return GetDomainsByStatusParams{
 		Status: status,
 		Limit:  limit,
 		Offset: offset,
 	}
 }
 
+func ToDBGetDomainsByStatusParams2(params *entity.GetDomainsByStatusParams) GetDomainsByStatusParams {
+	return GetDomainsByStatusParams{
+		Status: params.Status,
+		Limit:  params.Limit,
+		Offset: params.Offset,
+	}
+}
+
 // GetDomainsForRecheckParams
-func ToDBGetDomainsForRecheckParams(params *entity.GetDomainsForRecheckParams) repository.GetDomainsForRecheckParams {
-	return repository.GetDomainsForRecheckParams{
+func ToDBGetDomainsForRecheckParams(params *entity.GetDomainsForRecheckParams) GetDomainsForRecheckParams {
+	return GetDomainsForRecheckParams{
 		LastCheckAt: timeToSqlNullTime(params.LastCheckAt),
 		Limit:       params.Limit,
 	}
 }
 
 // MarkDomainAsScamParams
-func ToDBMarkDomainAsScamParams(params *entity.MarkDomainAsScamParams) repository.MarkDomainAsScamParams {
-	return repository.MarkDomainAsScamParams{
+func ToDBMarkDomainAsScamParams(params *entity.MarkDomainAsScamParams) MarkDomainAsScamParams {
+	return MarkDomainAsScamParams{
 		Domain:      params.Domain,
 		ScamSources: params.ScamSources,
 		ScamType:    stringToSqlNullString(params.ScamType),
@@ -63,8 +70,8 @@ func ToDBMarkDomainAsScamParams(params *entity.MarkDomainAsScamParams) repositor
 	}
 }
 
-func ToDBUpdateDomainStatusParams(params *entity.UpdateDomainStatusParams) repository.UpdateDomainStatusParams {
-	return repository.UpdateDomainStatusParams{
+func ToDBUpdateDomainStatusParams(params *entity.UpdateDomainStatusParams) UpdateDomainStatusParams {
+	return UpdateDomainStatusParams{
 		Domain:    params.Domain,
 		Status:    params.Status,
 		RiskScore: stringToSqlNullString(params.RiskScore),
@@ -72,8 +79,8 @@ func ToDBUpdateDomainStatusParams(params *entity.UpdateDomainStatusParams) repos
 	}
 }
 
-func ToDBVerifyDomainParams(params *entity.VerifyDomainParams) repository.VerifyDomainParams {
-	return repository.VerifyDomainParams{
+func ToDBVerifyDomainParams(params *entity.VerifyDomainParams) VerifyDomainParams {
+	return VerifyDomainParams{
 		Domain:             params.Domain,
 		VerifiedAt:         timeToSqlNullTime(params.VerifiedAt),
 		VerifiedBy:         stringToSqlNullString(params.VerifiedBy),
@@ -101,7 +108,7 @@ func byteSliceToNullRawMessage(data [][]byte) pqtype.NullRawMessage {
 }
 
 // // Обратные конвертеры (если понадобятся)
-// func ToEntityCreateDomainParams(params *repository.CreateDomainParams) *entity.CreateDomainParams {
+// func ToEntityCreateDomainParams(params *CreateDomainParams) *entity.CreateDomainParams {
 // 	return &entity.CreateDomainParams{
 // 		Domain:             params.Domain,
 // 		CompanyName:        sqlNullStringToPtr(params.CompanyName),

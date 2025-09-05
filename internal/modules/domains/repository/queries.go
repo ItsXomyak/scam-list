@@ -11,7 +11,7 @@ import (
 	"github.com/lib/pq"
 )
 
-func (q *Queries) СreateDomain(ctx context.Context, arg СreateDomainParams) (DomainDB, error) {
+func (q *Queries) CreateDomain(ctx context.Context, arg CreateDomainParams) (DomainDB, error) {
 	row := q.db.QueryRowContext(ctx, СreateDomain,
 		arg.Domain,
 		arg.CompanyName,
