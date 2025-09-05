@@ -9,6 +9,7 @@ import (
 
 type ScamChecker interface {
 	Check(ctx context.Context, domain string) (*entity.CheckerResult, error) // core функция чекеров с модулей
+	Info() string // полная инфа с чекера
 }
 
 type DomainService interface {
