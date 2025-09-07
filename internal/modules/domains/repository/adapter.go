@@ -5,6 +5,8 @@ import (
 	"database/sql"
 
 	"github.com/ItsXomyak/scam-list/internal/modules/domains/entity"
+	"github.com/ItsXomyak/scam-list/internal/modules/domains/repository/converters"
+	"github.com/ItsXomyak/scam-list/internal/modules/domains/repository/models"
 )
 
 type QueriesAdapter struct {
@@ -20,37 +22,38 @@ func NewQueriesAdapter(db DBTX) *QueriesAdapter {
 func (q *QueriesAdapter) DeleteDomain(ctx context.Context, domain string) error {
 	return q.t.DeleteDomain(ctx, domain)
 }
-func (q *QueriesAdapter) GetDomain(ctx context.Context, domain string) (DomainDB, error) {
+func (q *QueriesAdapter) GetDomain(ctx context.Context, domain string) (models.DomainDB, error) {
 	return q.t.GetDomain(ctx, domain)
 }
-func (q *QueriesAdapter) GetDomainsByRiskScore(ctx context.Context, arg *entity.GetDomainsByRiskScoreParams) ([]DomainDB, error) {
+func (q *QueriesAdapter) GetDomainsByRiskScore(ctx context.Context, arg *entity.GetDomainsByRiskScoreParams) ([]models.DomainDB, error) {
 
-	dbArg := ToDBGetDomainsByRiskScoreParams(arg)
+	dbArg := converters.ToDBGetDomainsByRiskScoreParams(arg)
 	return q.t.GetDomainsByRiskScore(ctx, dbArg)
 }
-func (q *QueriesAdapter) GetDomainsByStatus(ctx context.Context, arg *entity.GetDomainsByStatusParams) ([]DomainDB, error) {
-	dbArgs := ToDBGetDomainsByStatusParams2(arg)
+func (q *QueriesAdapter) GetDomainsByStatus(ctx context.Context, arg *entity.GetDomainsByStatusParams) ([]models.DomainDB, error) {
+	dbArgs := converters.ToDBGetDomainsByStatusParams2(arg)
 	return q.t.GetDomainsByStatus(ctx, dbArgs)
 }
-func (q *QueriesAdapter) GetDomainsForRecheck(ctx context.Context, arg *entity.GetDomainsForRecheckParams) ([]DomainDB, error) {
-	dbArgs := ToDBGetDomainsForRecheckParams(arg)
+func (q *QueriesAdapter) GetDomainsForRecheck(ctx context.Context, arg *entity.GetDomainsForRecheckParams) ([]models.DomainDB, error) {
+	dbArgs := converters.ToDBGetDomainsForRecheckParams(arg)
 	return q.t.GetDomainsForRecheck(ctx, dbArgs)
 }
-func (q *QueriesAdapter) MarkDomainAsScam(ctx context.Context, arg *entity.MarkDomainAsScamParams) (DomainDB, error) {
-	dbArgs := ToDBMarkDomainAsScamParams(arg)
+func (q *QueriesAdapter) MarkDomainAsScam(ctx context.Context, arg *entity.MarkDomainAsScamParams) (models.DomainDB, error) {
+	dbArgs := converters.ToDBMarkDomainAsScamParams(arg)
 	return q.t.MarkDomainAsScam(ctx, dbArgs)
 }
-func (q *QueriesAdapter) UpdateDomainStatus(ctx context.Context, arg UpdateDomainStatusParams) (DomainDB, error) {
-	return q.t.UpdateDomainStatus(ctx, arg)
+func (q *QueriesAdapter) UpdateDomainStatus(ctx context.Context, arg *entity.UpdateDomainStatusParams) (models.DomainDB, error) {
+	dbArgs := converters.ToDBUpdateDomainStatusParams(arg)
+	return q.t.UpdateDomainStatus(ctx, dbArgs)
 }
-func (q *QueriesAdapter) VerifyDomain(ctx context.Context, arg *entity.VerifyDomainParams) (DomainDB, error) {
-	dbArgs := ToDBVerifyDomainParams(arg)
+func (q *QueriesAdapter) VerifyDomain(ctx context.Context, arg *entity.VerifyDomainParams) (models.DomainDB, error) {
+	dbArgs := converters.ToDBVerifyDomainParams(arg)
 	return q.t.VerifyDomain(ctx, dbArgs)
 }
 func (q *QueriesAdapter) WithTx(tx *sql.Tx) *Queries {
 	return q.t.WithTx(tx)
 }
-func (q *QueriesAdapter) CreateDomain(ctx context.Context, arg *entity.CreateDomainParams) (DomainDB, error) {
-	dbArgs := ToDBCreateDomainParams(arg)
+func (q *QueriesAdapter) CreateDomain(ctx context.Context, arg *entity.CreateDomainParams) (models.DomainDB, error) {
+	dbArgs := converters.ToDBCreateDomainParams(arg)
 	return q.t.CreateDomain(ctx, dbArgs)
 }

@@ -1,4 +1,4 @@
-package repository
+package converters
 
 import (
 	"database/sql"
@@ -7,9 +7,10 @@ import (
 	"github.com/lib/pq"
 
 	"github.com/ItsXomyak/scam-list/internal/modules/domains/entity"
+	"github.com/ItsXomyak/scam-list/internal/modules/domains/repository/models"
 )
 
-func ToDomainEntity(dbDomain *DomainDB) *entity.Domain {
+func ToDomainEntity(dbDomain *models.DomainDB) *entity.Domain {
 	if dbDomain == nil {
 		return nil
 	}
@@ -34,7 +35,7 @@ func ToDomainEntity(dbDomain *DomainDB) *entity.Domain {
 	}
 }
 
-func ToPendingModerationEntity(dbMod *PendingModerationDB) *entity.PendingModeration {
+func ToPendingModerationEntity(dbMod *models.PendingModerationDB) *entity.PendingModeration {
 	if dbMod == nil {
 		return nil
 	}
@@ -91,12 +92,12 @@ func pqByteaArrayToSlice(arr pq.ByteaArray) [][]byte {
 }
 
 // Функции для обратной конвертации (если нужно)
-func ToDomainDB(domain *entity.Domain) *DomainDB {
+func ToDomainDB(domain *entity.Domain) *models.DomainDB {
 	if domain == nil {
 		return nil
 	}
 
-	return &DomainDB{
+	return &models.DomainDB{
 		Domain:             domain.Domain,
 		Status:             domain.Status,
 		CompanyName:        stringToSqlNullString(domain.CompanyName),

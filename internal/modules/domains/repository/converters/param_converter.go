@@ -1,13 +1,14 @@
-package repository
+package converters
 
 import (
 	"github.com/sqlc-dev/pqtype"
 
 	"github.com/ItsXomyak/scam-list/internal/modules/domains/entity"
+	"github.com/ItsXomyak/scam-list/internal/modules/domains/repository/models"
 )
 
-func ToDBCreateDomainParams(params *entity.CreateDomainParams) CreateDomainParams {
-	return CreateDomainParams{
+func ToDBCreateDomainParams(params *entity.CreateDomainParams) models.CreateDomainParams {
+	return models.CreateDomainParams{
 		Domain:             params.Domain,
 		CompanyName:        stringToSqlNullString(params.CompanyName),
 		Country:            stringToSqlNullString(params.Country),
@@ -24,9 +25,8 @@ func ToDBCreateDomainParams(params *entity.CreateDomainParams) CreateDomainParam
 	}
 }
 
-// GetDomainsByRiskScoreParams
-func ToDBGetDomainsByRiskScoreParams(params *entity.GetDomainsByRiskScoreParams) GetDomainsByRiskScoreParams {
-	return GetDomainsByRiskScoreParams{
+func ToDBGetDomainsByRiskScoreParams(params *entity.GetDomainsByRiskScoreParams) models.GetDomainsByRiskScoreParams {
+	return models.GetDomainsByRiskScoreParams{
 		RiskScore:   stringToSqlNullString(params.RiskScore),
 		RiskScore_2: stringToSqlNullString(params.RiscScore2), 
 		Limit:       params.Limit,
@@ -34,34 +34,31 @@ func ToDBGetDomainsByRiskScoreParams(params *entity.GetDomainsByRiskScoreParams)
 	}
 }
 
-// GetDomainsByStatusParams 
-func ToDBGetDomainsByStatusParams(status string, limit, offset int32) GetDomainsByStatusParams {
-	return GetDomainsByStatusParams{
+func ToDBGetDomainsByStatusParams(status string, limit, offset int32) models.GetDomainsByStatusParams {
+	return models.GetDomainsByStatusParams{
 		Status: status,
 		Limit:  limit,
 		Offset: offset,
 	}
 }
 
-func ToDBGetDomainsByStatusParams2(params *entity.GetDomainsByStatusParams) GetDomainsByStatusParams {
-	return GetDomainsByStatusParams{
+func ToDBGetDomainsByStatusParams2(params *entity.GetDomainsByStatusParams) models.GetDomainsByStatusParams {
+	return models.GetDomainsByStatusParams{
 		Status: params.Status,
 		Limit:  params.Limit,
 		Offset: params.Offset,
 	}
 }
 
-// GetDomainsForRecheckParams
-func ToDBGetDomainsForRecheckParams(params *entity.GetDomainsForRecheckParams) GetDomainsForRecheckParams {
-	return GetDomainsForRecheckParams{
+func ToDBGetDomainsForRecheckParams(params *entity.GetDomainsForRecheckParams) models.GetDomainsForRecheckParams {
+	return models.GetDomainsForRecheckParams{
 		LastCheckAt: timeToSqlNullTime(params.LastCheckAt),
 		Limit:       params.Limit,
 	}
 }
 
-// MarkDomainAsScamParams
-func ToDBMarkDomainAsScamParams(params *entity.MarkDomainAsScamParams) MarkDomainAsScamParams {
-	return MarkDomainAsScamParams{
+func ToDBMarkDomainAsScamParams(params *entity.MarkDomainAsScamParams) models.MarkDomainAsScamParams {
+	return models.MarkDomainAsScamParams{
 		Domain:      params.Domain,
 		ScamSources: params.ScamSources,
 		ScamType:    stringToSqlNullString(params.ScamType),
@@ -70,8 +67,8 @@ func ToDBMarkDomainAsScamParams(params *entity.MarkDomainAsScamParams) MarkDomai
 	}
 }
 
-func ToDBUpdateDomainStatusParams(params *entity.UpdateDomainStatusParams) UpdateDomainStatusParams {
-	return UpdateDomainStatusParams{
+func ToDBUpdateDomainStatusParams(params *entity.UpdateDomainStatusParams) models.UpdateDomainStatusParams {
+	return models.UpdateDomainStatusParams{
 		Domain:    params.Domain,
 		Status:    params.Status,
 		RiskScore: stringToSqlNullString(params.RiskScore),
@@ -79,8 +76,8 @@ func ToDBUpdateDomainStatusParams(params *entity.UpdateDomainStatusParams) Updat
 	}
 }
 
-func ToDBVerifyDomainParams(params *entity.VerifyDomainParams) VerifyDomainParams {
-	return VerifyDomainParams{
+func ToDBVerifyDomainParams(params *entity.VerifyDomainParams) models.VerifyDomainParams {
+	return models.VerifyDomainParams{
 		Domain:             params.Domain,
 		VerifiedAt:         timeToSqlNullTime(params.VerifiedAt),
 		VerifiedBy:         stringToSqlNullString(params.VerifiedBy),

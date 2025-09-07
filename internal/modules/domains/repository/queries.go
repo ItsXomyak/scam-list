@@ -9,10 +9,12 @@ import (
 	"context"
 
 	"github.com/lib/pq"
+
+	"github.com/ItsXomyak/scam-list/internal/modules/domains/repository/models"
 )
 
-func (q *Queries) CreateDomain(ctx context.Context, arg CreateDomainParams) (DomainDB, error) {
-	row := q.db.QueryRowContext(ctx, СreateDomain,
+func (q *Queries) CreateDomain(ctx context.Context, arg models.CreateDomainParams) (models.DomainDB, error) {
+	row := q.db.QueryRowContext(ctx, models.СreateDomain,
 		arg.Domain,
 		arg.CompanyName,
 		arg.Country,
@@ -27,7 +29,7 @@ func (q *Queries) CreateDomain(ctx context.Context, arg CreateDomainParams) (Dom
 		arg.Metadata,
 		arg.LastCheckAt,
 	)
-	var i DomainDB
+	var i models.DomainDB
 	err := row.Scan(
 		&i.Domain,
 		&i.Status,
@@ -50,13 +52,13 @@ func (q *Queries) CreateDomain(ctx context.Context, arg CreateDomainParams) (Dom
 }
 
 func (q *Queries) DeleteDomain(ctx context.Context, domain string) error {
-	_, err := q.db.ExecContext(ctx, DeleteDomain, domain)
+	_, err := q.db.ExecContext(ctx, models.DeleteDomain, domain)
 	return err
 }
 
-func (q *Queries) GetDomain(ctx context.Context, domain string) (DomainDB, error) {
-	row := q.db.QueryRowContext(ctx, GetDomain, domain)
-	var i DomainDB
+func (q *Queries) GetDomain(ctx context.Context, domain string) (models.DomainDB, error) {
+	row := q.db.QueryRowContext(ctx, models.GetDomain, domain)
+	var i models.DomainDB
 	err := row.Scan(
 		&i.Domain,
 		&i.Status,
@@ -78,8 +80,8 @@ func (q *Queries) GetDomain(ctx context.Context, domain string) (DomainDB, error
 	return i, err
 }
 
-func (q *Queries) GetDomainsByRiskScore(ctx context.Context, arg GetDomainsByRiskScoreParams) ([]DomainDB, error) {
-	rows, err := q.db.QueryContext(ctx, GetDomainsByRiskScore,
+func (q *Queries) GetDomainsByRiskScore(ctx context.Context, arg models.GetDomainsByRiskScoreParams) ([]models.DomainDB, error) {
+	rows, err := q.db.QueryContext(ctx, models.GetDomainsByRiskScore,
 		arg.RiskScore,
 		arg.RiskScore_2,
 		arg.Limit,
@@ -89,9 +91,9 @@ func (q *Queries) GetDomainsByRiskScore(ctx context.Context, arg GetDomainsByRis
 		return nil, err
 	}
 	defer rows.Close()
-	var items []DomainDB
+	var items []models.DomainDB
 	for rows.Next() {
-		var i DomainDB
+		var i models.DomainDB
 		if err := rows.Scan(
 			&i.Domain,
 			&i.Status,
@@ -123,15 +125,15 @@ func (q *Queries) GetDomainsByRiskScore(ctx context.Context, arg GetDomainsByRis
 	return items, nil
 }
 
-func (q *Queries) GetDomainsByStatus(ctx context.Context, arg GetDomainsByStatusParams) ([]DomainDB, error) {
-	rows, err := q.db.QueryContext(ctx, GetDomainsByStatus, arg.Status, arg.Limit, arg.Offset)
+func (q *Queries) GetDomainsByStatus(ctx context.Context, arg models.GetDomainsByStatusParams) ([]models.DomainDB, error) {
+	rows, err := q.db.QueryContext(ctx, models.GetDomainsByStatus, arg.Status, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []DomainDB
+	var items []models.DomainDB
 	for rows.Next() {
-		var i DomainDB
+		var i models.DomainDB
 		if err := rows.Scan(
 			&i.Domain,
 			&i.Status,
@@ -163,15 +165,15 @@ func (q *Queries) GetDomainsByStatus(ctx context.Context, arg GetDomainsByStatus
 	return items, nil
 }
 
-func (q *Queries) GetDomainsForRecheck(ctx context.Context, arg GetDomainsForRecheckParams) ([]DomainDB, error) {
-	rows, err := q.db.QueryContext(ctx, GetDomainsForRecheck, arg.LastCheckAt, arg.Limit)
+func (q *Queries) GetDomainsForRecheck(ctx context.Context, arg models.GetDomainsForRecheckParams) ([]models.DomainDB, error) {
+	rows, err := q.db.QueryContext(ctx, models.GetDomainsForRecheck, arg.LastCheckAt, arg.Limit)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []DomainDB
+	var items []models.DomainDB
 	for rows.Next() {
-		var i DomainDB
+		var i models.DomainDB
 		if err := rows.Scan(
 			&i.Domain,
 			&i.Status,
@@ -203,15 +205,15 @@ func (q *Queries) GetDomainsForRecheck(ctx context.Context, arg GetDomainsForRec
 	return items, nil
 }
 
-func (q *Queries) MarkDomainAsScam(ctx context.Context, arg MarkDomainAsScamParams) (DomainDB, error) {
-	row := q.db.QueryRowContext(ctx, MarkDomainAsScam,
+func (q *Queries) MarkDomainAsScam(ctx context.Context, arg models.MarkDomainAsScamParams) (models.DomainDB, error) {
+	row := q.db.QueryRowContext(ctx, models.MarkDomainAsScam,
 		arg.Domain,
 		pq.Array(arg.ScamSources),
 		arg.ScamType,
 		arg.RiskScore,
 		pq.Array(arg.Reasons),
 	)
-	var i DomainDB
+	var i models.DomainDB
 	err := row.Scan(
 		&i.Domain,
 		&i.Status,
@@ -233,14 +235,14 @@ func (q *Queries) MarkDomainAsScam(ctx context.Context, arg MarkDomainAsScamPara
 	return i, err
 }
 
-func (q *Queries) UpdateDomainStatus(ctx context.Context, arg UpdateDomainStatusParams) (DomainDB, error) {
-	row := q.db.QueryRowContext(ctx, UpdateDomainStatus,
+func (q *Queries) UpdateDomainStatus(ctx context.Context, arg models.UpdateDomainStatusParams) (models.DomainDB, error) {
+	row := q.db.QueryRowContext(ctx, models.UpdateDomainStatus,
 		arg.Domain,
 		arg.Status,
 		arg.RiskScore,
 		pq.Array(arg.Reasons),
 	)
-	var i DomainDB
+	var i models.DomainDB
 	err := row.Scan(
 		&i.Domain,
 		&i.Status,
@@ -262,8 +264,8 @@ func (q *Queries) UpdateDomainStatus(ctx context.Context, arg UpdateDomainStatus
 	return i, err
 }
 
-func (q *Queries) VerifyDomain(ctx context.Context, arg VerifyDomainParams) (DomainDB, error) {
-	row := q.db.QueryRowContext(ctx, VerifyDomain,
+func (q *Queries) VerifyDomain(ctx context.Context, arg models.VerifyDomainParams) (models.DomainDB, error) {
+	row := q.db.QueryRowContext(ctx, models.VerifyDomain,
 		arg.Domain,
 		arg.VerifiedAt,
 		arg.VerifiedBy,
@@ -272,7 +274,7 @@ func (q *Queries) VerifyDomain(ctx context.Context, arg VerifyDomainParams) (Dom
 		arg.RiskScore,
 		pq.Array(arg.Reasons),
 	)
-	var i DomainDB
+	var i models.DomainDB
 	err := row.Scan(
 		&i.Domain,
 		&i.Status,
