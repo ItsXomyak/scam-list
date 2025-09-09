@@ -88,7 +88,12 @@ func (app *App) Run(ctx context.Context) error {
 
 // Shutdown gracefully shuts down the application
 func (app *App) Shutdown(ctx context.Context) error {
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(app.cfg.HTTPServer.ShutdownTimeoutSeconds)*time.Second)
+	t, err := time.ParseDuration(fmt.Sprintf("%ds", app.cfg.HTTPServer.ShutdownTimeoutSeconds))
+	if err != nil {
+		t = 5 * time.Second
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, t)
 	defer cancel()
 
 	// Shutdown HTTP server

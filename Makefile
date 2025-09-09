@@ -9,14 +9,35 @@ linter-golangci: ### check by golangci linter
 	golangci-lint run
 .PHONY: linter-golangci
 
-migrate-create:  ### create new migration
-	migrate create -ext sql -dir migrations '$(PROJECT_NAME)'
 
-migrate-up: ### migration up
-	migrate -path migrations -database '$(PG_URL_LOCALHOST)?sslmode=disable' up
+## Database
+DB_URL=postgres://scam-user:scam-password@localhost:5432/scam-db?sslmode=disable
 
-migrate-down: ### migration down
-	echo "y" | migrate -path migrations -database '$(PG_URL_LOCALHOST)?sslmode=disable' down
+## Создание новой миграции: make migrate-create name=название
+migrate-create:
+	@echo "Creating new migration: $(name)"
+	migrate create -seq -ext=.sql -dir=./migrations/postgres $(name)
+
+## Применить все миграции
+migrate-up:
+	migrate -path=./migrations/postgres -database "$(DB_URL)" up
+
+## Применить N миграций: make migrate-upn n=2
+migrate-upn:
+	migrate -path=./migrations/postgres -database "$(DB_URL)" up $(n)
+
+## Откатить одну миграцию
+migrate-down1:
+	migrate -path=./migrations/postgres -database "$(DB_URL)" down 1
+
+## Откатить все миграции
+migrate-down:
+	migrate -path=./migrations/postgres -database "$(DB_URL)" down
+
+## Посмотреть текущую версию миграций
+migrate-version:
+	migrate -path=./migrations/postgres -database "$(DB_URL)" version
+
 
 test: ### run test
 	go test -v ./...

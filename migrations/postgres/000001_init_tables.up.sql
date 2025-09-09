@@ -42,7 +42,6 @@
 
   -- 2. Составные индексы для комплексных запросов
   CREATE INDEX idx_domains_status_risk ON domains(status, risk_score);
-  CREATE INDEX idx_domains_status_active ON domains(status, is_active) WHERE is_active = true;
 
   -- 3. Индексы для временных полей (для аналитики и очистки)
   CREATE INDEX idx_domains_created_at ON domains(created_at);
