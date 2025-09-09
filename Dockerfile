@@ -1,20 +1,28 @@
-FROM golang:alpine as modules
-COPY go.mod go.sum /modules/
-WORKDIR /modules
+# Стадия сборки
+FROM golang:1.22 AS builder
+
+WORKDIR /app
+
+# Кэшируем зависимости
+COPY go.mod go.sum ./
 RUN go mod download
 
+# Копируем исходники
+COPY . .
 
-FROM golang:alpine as builder
-COPY --from=modules /go/pkg /go/pkg
-COPY . /app
+# Сборка бинарника
+RUN CGO_ENABLED=0 GOOS=linux go build -o server ./cmd/api
+
+# Финальный образ
+FROM alpine:3.20
+
 WORKDIR /app
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -tags migrate -o /bin/app ./cmd/app
 
-FROM scratch
-COPY --from=builder /app/config /config
-COPY --from=builder /app/migrations /migrations
-COPY --from=builder /bin/app /app
-COPY --from=builder /app/.env /app/.env
-COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-CMD ["/app"]
+# Копируем бинарник
+COPY --from=builder /app/server .
+
+COPY .env .
+
+EXPOSE 8080
+
+CMD ["./server"]

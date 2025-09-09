@@ -1,17 +1,20 @@
 version: '3'
 services:
-  app:
-    container_name: "{$PROJECT_NAME}"
+  scam_app:
+    container_name: ${PROJECT_NAME}
     build: .
     env_file:
       - .env
     restart: always
-  
+    depends_on:
+      postgresql:
+        condition: service_healthy
+
   postgresql:
     image: postgres:16.3
-    hostname: postgresql
+    hostname: ${POSTGRES_HOST}
     ports:
-      - 5432:5432
+      - 5432:${POSTGRES_PORT}
     volumes:
       - ./data/postgresql:/var/lib/postgresql/data
     environment:
@@ -20,7 +23,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,11 +34,12 @@ services:
       - ./migrations:/migrations
     command:
       [
-        "-path", "/migrations/postgres",
-        "-database", "postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgresql:5432/${POSTGRES_DB}?sslmode=disable",
-        "up"
+        '-path',
+        '/migrations/postgres',
+        '-database',
+        'postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable',
+        'up',
       ]
     depends_on:
       postgresql:
         condition: service_healthy
-  

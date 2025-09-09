@@ -17,3 +17,6 @@
 - swagger
 - erm
 - etc...
+
+
+- docker exec -it scam-list-postgresql-1 psql -U postgres -d domains
