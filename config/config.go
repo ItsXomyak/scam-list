@@ -45,7 +45,7 @@ func (c Postgres) GetDsn() string {
 func New(path string) (Config, error) {
 	var config Config
 
-	if err := godotenv.Load(); err != nil {
+	if err := godotenv.Load(path); err != nil {
 		return config, fmt.Errorf("failed to load config: %w", err)
 	}
 

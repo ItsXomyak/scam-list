@@ -1,8 +1,51 @@
-version: '3'
+version: '3.9'
+
 services:
-  app:
-    container_name: "{$PROJECT_NAME}"
-    build: .
-    env_file:
-      - .env
+  db:
+    image: postgres:16
+    container_name: scam_db
     restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - '5432:${POSTGRES_PORT}'
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+
+  migrate:
+    image: migrate/migrate
+    container_name: scam_migrate
+    depends_on:
+      - db
+    volumes:
+      - ./migrations:/migrations
+    command:
+      [
+        '-path',
+        '/migrations',
+        '-database',
+        'postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}?sslmode=disable',
+        'up',
+      ]
+
+  app:
+    build: .
+    container_name: scam_app
+    depends_on:
+      - db
+    environment:
+      GIN_ENV: ${GIN_ENV}
+      HTTP_PORT: ${HTTP_PORT}
+      HTTP_SHUTDOWN_TIMEOUT_SECONDS: ${HTTP_SHUTDOWN_TIMEOUT_SECONDS}
+      POSTGRES_HOST: ${POSTGRES_HOST}
+      POSTGRES_PORT: ${POSTGRES_PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_MAX_POOL_SIZE: ${POSTGRES_MAX_POOL_SIZE}
+      POSTGRES_CONN_ATTEMPTS: ${POSTGRES_CONN_ATTEMPTS}
+      POSTGRES_CONN_TIMEOUT: ${POSTGRES_CONN_TIMEOUT}
+    ports:
+      - '8080:${HTTP_PORT}'
