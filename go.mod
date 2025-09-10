@@ -6,9 +6,7 @@ toolchain go1.23.0
 
 require (
 	github.com/gin-gonic/gin v1.10.1
-	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
-	github.com/sqlc-dev/pqtype v0.3.0
 	go.mongodb.org/mongo-driver v1.17.4
 )
 

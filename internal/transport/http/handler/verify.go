@@ -35,7 +35,7 @@ func (h *Verify) VerifyDomain(c *gin.Context) {
 	}
 
 	// ProcessDomain
-	_, err := h.verifier.ProcessDomain(ctx, domain)
+	result, err := h.verifier.ProcessDomain(ctx, domain)
 	if err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "error verifying domain", err, "domain", domain)
 		internalErrorResponse(c, "internal server error")
@@ -44,8 +44,7 @@ func (h *Verify) VerifyDomain(c *gin.Context) {
 
 	// Example response
 	c.JSON(http.StatusOK, gin.H{
-		"domain":  domain,
-		"is_scam": false,
+		"result": result,
 	})
 }
 

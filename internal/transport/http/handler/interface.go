@@ -7,5 +7,5 @@ import (
 )
 
 type Verifier interface {
-	ProcessDomain(ctx context.Context, url string) (*entity.Domain, error)
+	ProcessDomain(ctx context.Context, url string) (*entity.VerifyDomainResult, error)
 }

@@ -10,6 +10,8 @@ import (
 
 	"github.com/ItsXomyak/scam-list/config"
 	"github.com/ItsXomyak/scam-list/internal/core"
+	"github.com/ItsXomyak/scam-list/internal/modules/domains/repository"
+	"github.com/ItsXomyak/scam-list/internal/modules/domains/service"
 	httpserver "github.com/ItsXomyak/scam-list/internal/transport/http/server"
 	"github.com/ItsXomyak/scam-list/pkg/logger"
 	postgresclient "github.com/ItsXomyak/scam-list/pkg/postgres"
@@ -36,8 +38,14 @@ func NewApp(ctx context.Context, cfg config.Config, log logger.Logger) (*App, er
 		return nil, err
 	}
 
-	// Initialize domain pipeline
-	domainPipeline := core.NewDomainPipeline(nil, nil)
+	// repositories
+	domainRepo := repository.NewDomain(postgresDB.Pool)
+
+	// services
+	domainSvc := service.NewDomainService(domainRepo)
+
+	// core pipeline
+	domainPipeline := core.NewDomainPipeline(nil, domainSvc)
 
 	// Initialize HTTP server
 	server := httpserver.New(cfg, domainPipeline, log)
