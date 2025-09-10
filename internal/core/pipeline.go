@@ -28,18 +28,19 @@ func NewDomainPipeline(checkers []ScamChecker, domainSvc DomainService) *DomainP
 	}
 }
 
-func (p *DomainPipeline) ProcessDomain(ctx context.Context, url string) (*entity.VerifyDomainResult, error) {
+func (p *DomainPipeline) ProcessDomain(ctx context.Context, url string) (*entity.Domain, error) {
 	domain, err := p.domainSvc.GetDomain(ctx, url)
 	if err != nil {
 		return nil, err // TODO: обработать
 	}
 
-	if domain != nil{
-		return FromDomainToVerifyDomainResult(domain), nil
+	if domain.Domain != "" {
+		return domain, nil
 	}
 
 	wg := &sync.WaitGroup{}
 	resCh := make(chan *entity.CheckerResult, len(p.checkers))
+	errCh := make(chan error, len(p.checkers))
 
 	for _, checker := range p.checkers {
 		wg.Add(1)
@@ -47,25 +48,65 @@ func (p *DomainPipeline) ProcessDomain(ctx context.Context, url string) (*entity
 			defer wg.Done()
 					result, err := checker.Check(ctx, url)
 					if err != nil {
-						return // TODO: обработать ошибку
+						errCh <- err
+						return
 					}
 
 					resCh <- result
-		 } (checker)
+		 }(checker)
 	
 	}
 
 	go func () {
 		wg.Wait()
 		close(resCh)
+		close(errCh)
 	}()
 
 	total := 0.0
-	for result := range resCh {
-		total += result.TotalScore
-	}	
+	var results []*entity.CheckerResult
+	for {
+		select {
+		case result, ok := <-resCh:
+			if !ok {
+				resCh = nil
+			} else {
+				total += result.TotalScore
+				results = append(results, result)
+			}
+		case err, ok := <-errCh:
+			if !ok {
+				errCh = nil
+			} else {
+				// TODO: логировать ошибку или собирать их
+				_ = err
+			}
+		}
+		
+		if resCh == nil && errCh == nil {
+			break
+		}
+	}
 
-	return nil, nil
+
+	// TODO: доработать формирование ответа с модулей
+	verifyResult := &entity.Domain{
+		Domain:             url,
+		Status:             "unknown", // ну здесь вообще хуйня
+		CompanyName:        nil,
+		Country:            nil,
+		ScamSources:        nil,
+		ScamType:           nil,
+		VerifiedBy:         nil,
+		VerificationMethod: nil,
+		RiskScore:          nil,
+		Reasons:            nil,
+		Metadata:           nil,
+		CreatedAt:          nil,
+		UpdatedAt:          nil,
+	}
+
+	return verifyResult, nil
 }
 
 

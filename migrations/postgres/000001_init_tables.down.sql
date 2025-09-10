@@ -25,8 +25,6 @@ DROP INDEX IF EXISTS idx_domains_scam_type;
 DROP INDEX IF EXISTS idx_domains_metadata_gin;
 DROP INDEX IF EXISTS idx_domains_reasons_gin;
 DROP INDEX IF EXISTS idx_domains_scam_sources_gin;
-DROP INDEX IF EXISTS idx_domains_expires_at;
-DROP INDEX IF EXISTS idx_domains_last_check_at;
 DROP INDEX IF EXISTS idx_domains_updated_at;
 DROP INDEX IF EXISTS idx_domains_created_at;
 DROP INDEX IF EXISTS idx_domains_status_risk;

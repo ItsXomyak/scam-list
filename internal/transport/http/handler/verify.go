@@ -6,8 +6,9 @@ import (
 	"net/url"
 	"regexp"
 
-	"github.com/ItsXomyak/scam-list/pkg/logger"
 	"github.com/gin-gonic/gin"
+
+	"github.com/ItsXomyak/scam-list/pkg/logger"
 )
 
 type Verify struct {
@@ -48,7 +49,7 @@ func (h *Verify) VerifyDomain(c *gin.Context) {
 	})
 }
 
-// validateDomain checks if the provided domain is valid
+// checks if the provided domain is valid
 func validateDomain(raw string) error {
 	if len(raw) == 0 {
 		return errors.New("URL must be provided")
