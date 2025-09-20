@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/ItsXomyak/scam-list/config"
-	"github.com/ItsXomyak/scam-list/internal/transport/http/handler"
+	"github.com/ItsXomyak/scam-list/internal/adapter/http/handler"
 	"github.com/ItsXomyak/scam-list/pkg/logger"
 	"github.com/gin-gonic/gin"
 )

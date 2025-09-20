@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"net/url"
@@ -8,8 +9,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"github.com/ItsXomyak/scam-list/internal/domain/entity"
 	"github.com/ItsXomyak/scam-list/pkg/logger"
 )
+
+type Verifier interface {
+	ProcessDomain(ctx context.Context, url string) (*entity.VerifyDomainResult, error)
+}
 
 type Verify struct {
 	verifier Verifier

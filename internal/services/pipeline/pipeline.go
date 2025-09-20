@@ -1,4 +1,4 @@
-package core
+package pipeline
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ItsXomyak/scam-list/internal/modules/domains/entity"
+	"github.com/ItsXomyak/scam-list/internal/domain/entity"
 )
 
 type ScamChecker interface {

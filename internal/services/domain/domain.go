@@ -1,9 +1,9 @@
-package service
+package domain
 
 import (
 	"context"
 
-	"github.com/ItsXomyak/scam-list/internal/modules/domains/entity"
+	"github.com/ItsXomyak/scam-list/internal/domain/entity"
 )
 
 type DomainRepository interface {
