@@ -25,9 +25,10 @@ type API struct {
 
 type handlers struct {
 	verify *handler.Verify
+	admin  *handler.AdminPanel
 }
 
-func New(cfg config.Config, verifier Verifier, logger logger.Logger) *API {
+func New(cfg config.Config, verifier Verifier, domainSvc DomainService, logger logger.Logger) *API {
 	addr := fmt.Sprintf(serverIPAddress, "0.0.0.0", cfg.HTTPServer.Port)
 
 	// Set Gin mode based on environment
@@ -42,6 +43,7 @@ func New(cfg config.Config, verifier Verifier, logger logger.Logger) *API {
 	// Initialize handlers
 	handlers := &handlers{
 		verify: handler.NewVerify(verifier, logger),
+		admin:  handler.NewAdminPanel(domainSvc, logger),
 	}
 
 	router := gin.New()

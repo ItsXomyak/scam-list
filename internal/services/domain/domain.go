@@ -9,6 +9,9 @@ import (
 type DomainRepository interface {
 	CreateDomain(ctx context.Context, arg entity.CreateDomainParams) (*entity.Domain, error)
 	GetDomain(ctx context.Context, domain string) (*entity.Domain, error)
+	GetAllDomains(ctx context.Context) ([]*entity.Domain, error)
+	UpdateDomain(ctx context.Context, updated *entity.Domain) (*entity.Domain, error)
+	DeleteDomain(ctx context.Context, domain string) error
 }
 
 type DomainService struct {

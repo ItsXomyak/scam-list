@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type Domain struct {
 	VerificationMethod *string
 	RiskScore          *string
 	Reasons            []string
-	Metadata           [][]byte
+	Metadata           []json.RawMessage
 	CreatedAt          *time.Time
 	UpdatedAt          *time.Time
 }

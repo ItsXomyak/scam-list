@@ -15,11 +15,20 @@ func (a *API) setupRoutes() {
 	{
 		api.GET("/verify/:domain", a.routes.verify.VerifyDomain)
 	}
+
+	// для бауки
+	admin := a.router.Group("/admin")
+	{
+		admin.POST("/domain/create", a.routes.admin.CreateDomain)
+		admin.GET("/domain", a.routes.admin.GetAllDomains)
+		admin.GET("/domain/:domain", a.routes.admin.GetDomain)
+		admin.PATCH("/domain/:domain", a.routes.admin.PatchDomain)
+		admin.DELETE("/domain/:domain", a.routes.admin.DeleteDomain)
+	}
 }
 
 // setupDefaultRoutes - setups default http routes
 func (a *API) setupDefaultRoutes() {
-	// System Health
 	a.router.GET("/health", a.HealthCheck)
 }
 

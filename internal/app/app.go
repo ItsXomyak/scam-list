@@ -29,7 +29,7 @@ type App struct {
 // NewApp creates a new instance of the application
 func NewApp(ctx context.Context, cfg config.Config, log logger.Logger) (*App, error) {
 	// Initialize Postgres client
-	postgresDB, err := postgresclient.New(ctx, cfg.Postgres.GetDsn(), &postgresclient.Postgres{
+	postgresDB, err := postgresclient.New(ctx, cfg.Postgres.GetDsn(), &postgresclient.Config{
 		MaxPoolSize:  cfg.Postgres.MaxPoolSize,
 		ConnAttempts: cfg.Postgres.ConnAttempts,
 		ConnTimeout:  cfg.Postgres.ConnTimeout,
@@ -48,7 +48,7 @@ func NewApp(ctx context.Context, cfg config.Config, log logger.Logger) (*App, er
 	domainPipeline := pipeline.NewDomainPipeline(nil, domainSvc)
 
 	// Initialize HTTP server
-	server := httpserver.New(cfg, domainPipeline, log)
+	server := httpserver.New(cfg, domainPipeline, domainRepo, log)
 
 	return &App{
 		postgresDB: postgresDB,

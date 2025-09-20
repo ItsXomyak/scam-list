@@ -1,39 +1,53 @@
 package dto
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/ItsXomyak/scam-list/internal/domain/entity"
 )
 
 type CreateDomainRequest struct {
-	Domain             string   `json:"domain"`
-	Status             string   `json:"status"`
-	CompanyName        *string  `json:"company_name,omitempty"`
-	Country            *string  `json:"country,omitempty"`
-	ScamSources        []string `json:"scam_sources,omitempty"`
-	ScamType           *string  `json:"scam_type,omitempty"`
-	VerifiedBy         *string  `json:"verified_by,omitempty"`
-	VerificationMethod *string  `json:"verification_method,omitempty"`
-	RiskScore          *string  `json:"risk_score,omitempty"`
-	Reasons            []string `json:"reasons,omitempty"`
-	Metadata           [][]byte `json:"metadata,omitempty"`
+	Domain             string            `json:"domain"`
+	Status             string            `json:"status"`
+	CompanyName        *string           `json:"company_name,omitempty"`
+	Country            *string           `json:"country,omitempty"`
+	ScamSources        []string          `json:"scam_sources,omitempty"`
+	ScamType           *string           `json:"scam_type,omitempty"`
+	VerifiedBy         *string           `json:"verified_by,omitempty"`
+	VerificationMethod *string           `json:"verification_method,omitempty"`
+	RiskScore          *string           `json:"risk_score,omitempty"`
+	Reasons            []string          `json:"reasons,omitempty"`
+	Metadata           []json.RawMessage `json:"metadata,omitempty"`
 }
 
 type DomainResponse struct {
-	Domain             string   `json:"domain"`
-	Status             string   `json:"status"`
-	CompanyName        *string  `json:"company_name"`
-	Country            *string  `json:"country"`
-	ScamSources        []string `json:"scam_sources"`
-	ScamType           *string  `json:"scam_type"`
-	VerifiedBy         *string  `json:"verified_by"`
-	VerificationMethod *string  `json:"verification_method"`
-	RiskScore          *string  `json:"risk_score"`
-	Reasons            []string `json:"reasons"`
-	Metadata           [][]byte `json:"metadata"`
-	CreatedAt          *string  `json:"created_at"`
-	UpdatedAt          *string  `json:"updated_at"`
+	Domain             string            `json:"domain"`
+	Status             string            `json:"status"`
+	CompanyName        *string           `json:"company_name"`
+	Country            *string           `json:"country"`
+	ScamSources        []string          `json:"scam_sources"`
+	ScamType           *string           `json:"scam_type"`
+	VerifiedBy         *string           `json:"verified_by"`
+	VerificationMethod *string           `json:"verification_method"`
+	RiskScore          *string           `json:"risk_score"`
+	Reasons            []string          `json:"reasons"`
+	Metadata           []json.RawMessage `json:"metadata"`
+	CreatedAt          *string           `json:"created_at"`
+	UpdatedAt          *string           `json:"updated_at"`
+}
+
+type UpdateDomainRequest struct {
+	Status             *string            `json:"status,omitempty"`
+	CompanyName        *string            `json:"company_name,omitempty"`
+	Country            *string            `json:"country,omitempty"`
+	ScamSources        *[]string          `json:"scam_sources,omitempty"`
+	ScamType           *string            `json:"scam_type,omitempty"`
+	VerifiedBy         *string            `json:"verified_by,omitempty"`
+	VerificationMethod *string            `json:"verification_method,omitempty"`
+	RiskScore          *string            `json:"risk_score,omitempty"`
+	Reasons            *[]string          `json:"reasons,omitempty"`
+	Metadata           *[]json.RawMessage `json:"metadata,omitempty"` // или *[]byte[] если оставляешь [][]byte
 }
 
 func FromCreateRequestToInternal(req *CreateDomainRequest) *entity.CreateDomainParams {

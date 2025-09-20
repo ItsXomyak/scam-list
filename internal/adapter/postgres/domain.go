@@ -26,51 +26,34 @@ func NewDomain(pool postgres.PgxPool) *DomainRepository {
 // helpers for metadata
 // =====================
 
-// packMetadata: [][]byte (каждый элемент — валидный JSON) -> JSON-массив []byte
-func packMetadata(src [][]byte) ([]byte, error) {
+// pack: []json.RawMessage -> []byte (JSON-массив)
+func packMetadata(src []json.RawMessage) ([]byte, error) {
 	if src == nil {
-		return nil, nil // позволим NULL в БД
+		return nil, nil
 	}
-	arr := make([]json.RawMessage, len(src))
+	// опционально: провалидировать каждый элемент
 	for i := range src {
-		if !json.Valid(src[i]) {
+		if len(src[i]) > 0 && !json.Valid(src[i]) {
 			return nil, fmt.Errorf("metadata[%d] is not valid JSON", i)
 		}
-		arr[i] = json.RawMessage(src[i])
 	}
-	return json.Marshal(arr)
+	return json.Marshal(src)
 }
 
-// unpackMetadata: JSON-массив []byte -> [][]byte
-func unpackMetadata(b []byte) ([][]byte, error) {
+// unpack: []byte -> []json.RawMessage
+func unpackMetadata(b []byte) ([]json.RawMessage, error) {
 	if len(b) == 0 {
 		return nil, nil
 	}
 	var arr []json.RawMessage
 	if err := json.Unmarshal(b, &arr); err != nil {
-		// если вдруг в БД не массив, вернём ошибку явную
 		return nil, fmt.Errorf("metadata is not a JSON array: %w", err)
 	}
-	out := make([][]byte, len(arr))
-	for i := range arr {
-		// делаем копию, чтобы не держать ссылки на один буфер
-		if arr[i] == nil {
-			out[i] = nil
-			continue
-		}
-		cp := make([]byte, len(arr[i]))
-		copy(cp, arr[i])
-		out[i] = cp
-	}
-	return out, nil
+	// можно вернуть как есть; RawMessage уже копия байт
+	return arr, nil
 }
 
-// =====================
-// CRUD
-// =====================
-
 func (u *DomainRepository) CreateDomain(ctx context.Context, arg entity.CreateDomainParams) (*entity.Domain, error) {
-	// подготовим metadata
 	mdJSON, err := packMetadata(arg.Metadata)
 	if err != nil {
 		return nil, err

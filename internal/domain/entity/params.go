@@ -1,5 +1,7 @@
 package entity
 
+import "encoding/json"
+
 type CreateDomainParams struct {
 	Domain             string
 	Status             string
@@ -11,7 +13,7 @@ type CreateDomainParams struct {
 	VerificationMethod *string
 	RiskScore          *string
 	Reasons            []string
-	Metadata           [][]byte
+	Metadata           []json.RawMessage
 }
 
 // type GetDomainsByRiskScoreParams struct {

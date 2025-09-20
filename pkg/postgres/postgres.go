@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -24,41 +23,69 @@ type PgxPool interface {
 	Ping(ctx context.Context) error
 }
 
-type Postgres struct {
+type Config struct {
 	MaxPoolSize  int
 	ConnAttempts int
 	ConnTimeout  time.Duration
-
-	Pool PgxPool
+}
+type Postgres struct {
+	Pool *pgxpool.Pool
 }
 
-func New(ctx context.Context, url string, pg *Postgres) (*Postgres, error) {
-	poolConfig, err := pgxpool.ParseConfig(url)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse config: %w", err)
+func New(ctx context.Context, dsn string, cfg *Config) (*Postgres, error) {
+	// Значения по умолчанию
+	def := Config{
+		MaxPoolSize:  10,
+		ConnAttempts: 1,
+		ConnTimeout:  2 * time.Second,
+	}
+	if cfg == nil {
+		cfg = &def
+	}
+	if cfg.ConnAttempts <= 0 {
+		cfg.ConnAttempts = 1
+	}
+	if cfg.MaxPoolSize <= 0 {
+		cfg.MaxPoolSize = def.MaxPoolSize
+	}
+	if cfg.ConnTimeout <= 0 {
+		cfg.ConnTimeout = def.ConnTimeout
 	}
 
-	poolConfig.MaxConns = int32(pg.MaxPoolSize)
+	poolCfg, err := pgxpool.ParseConfig(dsn)
+	if err != nil {
+		return nil, fmt.Errorf("parse pg config: %w", err)
+	}
+	poolCfg.MaxConns = int32(cfg.MaxPoolSize)
 
-	for pg.ConnAttempts > 0 {
-		pg.Pool, err = pgxpool.NewWithConfig(ctx, poolConfig)
-		if err == nil {
-			break
+	var pool *pgxpool.Pool
+	for i := 0; i < cfg.ConnAttempts; i++ {
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
 		}
 
-		log.Printf("trying to connect to postgres, attempts left: %d", pg.ConnAttempts)
-		time.Sleep(pg.ConnTimeout)
-		pg.ConnAttempts--
-	}
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to postgres: %w", err)
+		pool, err = pgxpool.NewWithConfig(ctx, poolCfg)
+		if err == nil {
+			if pingErr := pool.Ping(ctx); pingErr == nil {
+				return &Postgres{Pool: pool}, nil
+			}
+			pool.Close()
+			err = fmt.Errorf("ping failed: %w", err)
+		}
+
+		// если это не последний ретрай — подождём таймаут или отмену контекста
+		if i < cfg.ConnAttempts-1 {
+			select {
+			case <-time.After(cfg.ConnTimeout):
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			}
+		}
 	}
 
-	if err := pg.Pool.Ping(ctx); err != nil {
-		pg.Pool.Close()
-		return nil, fmt.Errorf("failed to ping postgres: %w", err)
-	}
-	return pg, nil
+	return nil, fmt.Errorf("failed to connect to postgres after %d attempts: %w", cfg.ConnAttempts, err)
 }
 
 func (p *Postgres) Close() {
