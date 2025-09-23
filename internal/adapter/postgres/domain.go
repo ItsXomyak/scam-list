@@ -22,38 +22,7 @@ func NewDomain(pool postgres.PgxPool) *DomainRepository {
 	}
 }
 
-// =====================
-// helpers for metadata
-// =====================
-
-// pack: []json.RawMessage -> []byte (JSON-массив)
-func packMetadata(src []json.RawMessage) ([]byte, error) {
-	if src == nil {
-		return nil, nil
-	}
-	// опционально: провалидировать каждый элемент
-	for i := range src {
-		if len(src[i]) > 0 && !json.Valid(src[i]) {
-			return nil, fmt.Errorf("metadata[%d] is not valid JSON", i)
-		}
-	}
-	return json.Marshal(src)
-}
-
-// unpack: []byte -> []json.RawMessage
-func unpackMetadata(b []byte) ([]json.RawMessage, error) {
-	if len(b) == 0 {
-		return nil, nil
-	}
-	var arr []json.RawMessage
-	if err := json.Unmarshal(b, &arr); err != nil {
-		return nil, fmt.Errorf("metadata is not a JSON array: %w", err)
-	}
-	// можно вернуть как есть; RawMessage уже копия байт
-	return arr, nil
-}
-
-func (u *DomainRepository) CreateDomain(ctx context.Context, arg entity.CreateDomainParams) (*entity.Domain, error) {
+func (u *DomainRepository) CreateDomain(ctx context.Context, arg *entity.CreateDomainParams) (*entity.Domain, error) {
 	mdJSON, err := packMetadata(arg.Metadata)
 	if err != nil {
 		return nil, err
@@ -67,7 +36,7 @@ func (u *DomainRepository) CreateDomain(ctx context.Context, arg entity.CreateDo
 		)
 		VALUES (
 			$1, $2, $3, $4, $5,
-			$6, $7, $8, $9::numeric,
+			$6, $7, $8, $9,
 			$10, $11::jsonb
 		)
 		RETURNING
@@ -79,7 +48,7 @@ func (u *DomainRepository) CreateDomain(ctx context.Context, arg entity.CreateDo
 			scam_type,
 			verified_by,
 			verification_method,
-			risk_score::text,
+			risk_score,
 			reasons,
 			metadata,
 			created_at,
@@ -87,15 +56,16 @@ func (u *DomainRepository) CreateDomain(ctx context.Context, arg entity.CreateDo
 	`
 
 	var (
-		res                    entity.Domain
-		metadataRaw            []byte
-		riskScoreText, company *string
-		country                *string
-		scamType               *string
-		verifiedBy             *string
-		verificationMethod     *string
-		createdAt, updatedAt   *time.Time
-		scamSources, reasons   []string
+		res                  entity.Domain
+		metadataRaw          []byte
+		company              *string
+		country              *string
+		scamType             *string
+		verifiedBy           *string
+		verificationMethod   *string
+		riskScoreText        *float64
+		createdAt, updatedAt *time.Time
+		scamSources, reasons []string
 	)
 
 	err = u.pool.QueryRow(ctx, query,
@@ -107,7 +77,7 @@ func (u *DomainRepository) CreateDomain(ctx context.Context, arg entity.CreateDo
 		arg.ScamType,           // nullable
 		arg.VerifiedBy,         // nullable
 		arg.VerificationMethod, // nullable
-		arg.RiskScore,          // ::numeric (nullable строка)
+		arg.RiskScore,          //
 		arg.Reasons,            // text[]
 		mdJSON,                 // ::jsonb
 	).Scan(
@@ -160,7 +130,7 @@ func (u *DomainRepository) GetDomain(ctx context.Context, domain string) (*entit
 			scam_type,
 			verified_by,
 			verification_method,
-			risk_score::text,
+			risk_score,
 			reasons,
 			metadata,
 			created_at,
@@ -170,15 +140,16 @@ func (u *DomainRepository) GetDomain(ctx context.Context, domain string) (*entit
 	`
 
 	var (
-		res                    entity.Domain
-		metadataRaw            []byte
-		riskScoreText, company *string
-		country                *string
-		scamType               *string
-		verifiedBy             *string
-		verificationMethod     *string
-		createdAt, updatedAt   *time.Time
-		scamSources, reasons   []string
+		res                  entity.Domain
+		metadataRaw          []byte
+		company              *string
+		country              *string
+		scamType             *string
+		verifiedBy           *string
+		verificationMethod   *string
+		riskScoreText        *float64
+		createdAt, updatedAt *time.Time
+		scamSources, reasons []string
 	)
 
 	err := u.pool.QueryRow(ctx, query, domain).Scan(
@@ -231,7 +202,7 @@ func (u *DomainRepository) GetAllDomains(ctx context.Context) ([]*entity.Domain,
 			scam_type,
 			verified_by,
 			verification_method,
-			risk_score::text,
+			risk_score,
 			reasons,
 			metadata,
 			created_at,
@@ -250,15 +221,17 @@ func (u *DomainRepository) GetAllDomains(ctx context.Context) ([]*entity.Domain,
 
 	for rows.Next() {
 		var (
-			d                      entity.Domain
-			metadataRaw            []byte
-			riskScoreText, company *string
-			country                *string
-			scamType               *string
-			verifiedBy             *string
-			verificationMethod     *string
-			createdAt, updatedAt   *time.Time
-			scamSources, reasons   []string
+			d                  entity.Domain
+			metadataRaw        []byte
+			company            *string
+			country            *string
+			scamType           *string
+			verifiedBy         *string
+			verificationMethod *string
+			riskScoreText      *float64
+
+			createdAt, updatedAt *time.Time
+			scamSources, reasons []string
 		)
 
 		if err := rows.Scan(
@@ -321,7 +294,7 @@ func (u *DomainRepository) UpdateDomain(ctx context.Context, updated *entity.Dom
 			scam_type = $6,
 			verified_by = $7,
 			verification_method = $8,
-			risk_score = $9::numeric,
+			risk_score = $9,
 			reasons = $10,
 			metadata = $11,
 			updated_at = NOW()
@@ -335,7 +308,7 @@ func (u *DomainRepository) UpdateDomain(ctx context.Context, updated *entity.Dom
 			scam_type,
 			verified_by,
 			verification_method,
-			risk_score::text,
+			risk_score,
 			reasons,
 			metadata,
 			created_at,
@@ -343,15 +316,16 @@ func (u *DomainRepository) UpdateDomain(ctx context.Context, updated *entity.Dom
 	`
 
 	var (
-		res                    entity.Domain
-		metadataRaw            []byte
-		riskScoreText, company *string
-		country                *string
-		scamType               *string
-		verifiedBy             *string
-		verificationMethod     *string
-		createdAt, updatedAt   *time.Time
-		scamSources, reasons   []string
+		res                  entity.Domain
+		metadataRaw          []byte
+		company              *string
+		country              *string
+		scamType             *string
+		verifiedBy           *string
+		verificationMethod   *string
+		riskScoreText        *float64
+		createdAt, updatedAt *time.Time
+		scamSources, reasons []string
 	)
 
 	err = u.pool.QueryRow(ctx, query,
@@ -363,7 +337,7 @@ func (u *DomainRepository) UpdateDomain(ctx context.Context, updated *entity.Dom
 		updated.ScamType,
 		updated.VerifiedBy,
 		updated.VerificationMethod,
-		updated.RiskScore, // ::numeric
+		updated.RiskScore,
 		updated.Reasons,
 		mdJSON,
 	).Scan(
@@ -375,7 +349,7 @@ func (u *DomainRepository) UpdateDomain(ctx context.Context, updated *entity.Dom
 		&scamType,
 		&verifiedBy,
 		&verificationMethod,
-		&riskScoreText,
+		riskScoreText,
 		&reasons,
 		&metadataRaw,
 		&createdAt,
@@ -414,4 +388,35 @@ func (u *DomainRepository) DeleteDomain(ctx context.Context, domain string) erro
 		return pgx.ErrNoRows
 	}
 	return nil
+}
+
+// =====================
+// helpers for metadata
+// =====================
+
+// pack: []json.RawMessage -> []byte (JSON-массив)
+func packMetadata(src []json.RawMessage) ([]byte, error) {
+	if src == nil {
+		return nil, nil
+	}
+	// опционально: провалидировать каждый элемент
+	for i := range src {
+		if len(src[i]) > 0 && !json.Valid(src[i]) {
+			return nil, fmt.Errorf("metadata[%d] is not valid JSON", i)
+		}
+	}
+	return json.Marshal(src)
+}
+
+// unpack: []byte -> []json.RawMessage
+func unpackMetadata(b []byte) ([]json.RawMessage, error) {
+	if len(b) == 0 {
+		return nil, nil
+	}
+	var arr []json.RawMessage
+	if err := json.Unmarshal(b, &arr); err != nil {
+		return nil, fmt.Errorf("metadata is not a JSON array: %w", err)
+	}
+	// можно вернуть как есть; RawMessage уже копия байт
+	return arr, nil
 }

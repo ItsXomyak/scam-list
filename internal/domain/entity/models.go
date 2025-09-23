@@ -14,7 +14,7 @@ type Domain struct {
 	ScamType           *string
 	VerifiedBy         *string
 	VerificationMethod *string
-	RiskScore          *string
+	RiskScore          *float64
 	Reasons            []string
 	Metadata           []json.RawMessage
 	CreatedAt          *time.Time
