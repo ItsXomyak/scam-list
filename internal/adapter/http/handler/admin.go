@@ -7,11 +7,13 @@ import (
 	"github.com/ItsXomyak/scam-list/internal/adapter/http/handler/dto"
 	"github.com/ItsXomyak/scam-list/internal/domain/entity"
 	"github.com/ItsXomyak/scam-list/pkg/logger"
+	"github.com/ItsXomyak/scam-list/pkg/utils"
+	"github.com/ItsXomyak/scam-list/pkg/validator"
 	"github.com/gin-gonic/gin"
 )
 
 type DomainRepository interface {
-	CreateDomain(ctx context.Context, params entity.CreateDomainParams) (*entity.Domain, error)
+	CreateDomain(ctx context.Context, params *entity.CreateDomainParams) (*entity.Domain, error)
 	GetAllDomains(ctx context.Context) ([]*entity.Domain, error)
 	GetDomain(ctx context.Context, domain string) (*entity.Domain, error)
 	UpdateDomain(ctx context.Context, updated *entity.Domain) (*entity.Domain, error)
@@ -40,14 +42,35 @@ func (h *AdminPanel) CreateDomain(c *gin.Context) {
 		return
 	}
 
-	r, err := h.domain.CreateDomain(ctx, *dto.FromCreateRequestToInternal(req))
+	// Extracting domain from the request
+	cleanDomain, err := utils.ExtractDomain(req.Domain)
 	if err != nil {
-		h.log.Error(logger.ErrorCtx(ctx, err), "failed to create domain", err)
 		badRequestResponse(c, err.Error())
 		return
 	}
+	req.Domain = cleanDomain
 
-	c.JSON(http.StatusOK, r)
+	createReq := dto.FromCreateRequestToInternal(req)
+
+	// Validate
+	v := validator.New()
+	dto.ValidateCreateDomain(v, createReq)
+	if !v.Valid() {
+		badRequestResponse(c, v.Errors)
+		return
+	}
+
+	r, err := h.domain.CreateDomain(ctx, createReq)
+	if err != nil {
+		h.log.Error(logger.ErrorCtx(ctx, err), "failed to create domain", err)
+		errCtx := dto.FromError(err)
+		errorResponse(c, errCtx.Code, errCtx.Message)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"domain": dto.ToDomainResponse(r),
+	})
 }
 
 func (h *AdminPanel) GetAllDomains(c *gin.Context) {
@@ -57,7 +80,8 @@ func (h *AdminPanel) GetAllDomains(c *gin.Context) {
 	all, err := h.domain.GetAllDomains(ctx)
 	if err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "failed to get all domains", err)
-		badRequestResponse(c, err.Error())
+		errCtx := dto.FromError(err)
+		errorResponse(c, errCtx.Code, errCtx.Message)
 		return
 	}
 
@@ -66,7 +90,12 @@ func (h *AdminPanel) GetAllDomains(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, all)
+	c.JSON(http.StatusOK, gin.H{
+		"domains": dto.ToBatchDomainResponse(all),
+		"metadata": gin.H{
+			"total": len(all),
+		},
+	})
 }
 
 func (h *AdminPanel) GetDomain(c *gin.Context) {
@@ -81,11 +110,14 @@ func (h *AdminPanel) GetDomain(c *gin.Context) {
 	d, err := h.domain.GetDomain(ctx, domain)
 	if err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "failed to get domain", err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "domain not found"})
+		errCtx := dto.FromError(err)
+		errorResponse(c, errCtx.Code, errCtx.Message)
 		return
 	}
 
-	c.JSON(http.StatusOK, d)
+	c.JSON(http.StatusOK, gin.H{
+		"domain": dto.ToDomainResponse(d),
+	})
 }
 
 func (h *AdminPanel) PatchDomain(c *gin.Context) {
@@ -100,7 +132,8 @@ func (h *AdminPanel) PatchDomain(c *gin.Context) {
 	cur, err := h.domain.GetDomain(ctx, domain)
 	if err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "failed to get domain before update", err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "domain not found"})
+		errCtx := dto.FromError(err)
+		errorResponse(c, errCtx.Code, errCtx.Message)
 		return
 	}
 
@@ -121,7 +154,7 @@ func (h *AdminPanel) PatchDomain(c *gin.Context) {
 		cur.Country = req.Country // *string
 	}
 	if req.ScamSources != nil {
-		cur.ScamSources = *req.ScamSources // *[]string
+		cur.ScamSources = req.ScamSources // *[]string
 	}
 	if req.ScamType != nil {
 		cur.ScamType = req.ScamType // *string
@@ -136,20 +169,31 @@ func (h *AdminPanel) PatchDomain(c *gin.Context) {
 		cur.RiskScore = req.RiskScore // *string (или поменяй на *float64, если перейдёшь)
 	}
 	if req.Reasons != nil {
-		cur.Reasons = *req.Reasons // *[]string
+		cur.Reasons = req.Reasons // *[]string
 	}
 	if req.Metadata != nil {
-		cur.Metadata = *req.Metadata
+		cur.Metadata = req.Metadata
+	}
+
+	v := validator.New()
+	dto.ValidatePatchDomain(v, cur)
+
+	if !v.Valid() {
+		badRequestResponse(c, v.Errors)
+		return
 	}
 
 	updated, err := h.domain.UpdateDomain(ctx, cur)
 	if err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "failed to update domain", err)
-		errorResponse(c, getCode(err), err.Error())
+		errCtx := dto.FromError(err)
+		errorResponse(c, errCtx.Code, errCtx.Message)
 		return
 	}
 
-	c.JSON(http.StatusOK, updated)
+	c.JSON(http.StatusOK, gin.H{
+		"domain": dto.ToDomainResponse(updated),
+	})
 }
 
 func (h *AdminPanel) DeleteDomain(c *gin.Context) {
@@ -163,7 +207,8 @@ func (h *AdminPanel) DeleteDomain(c *gin.Context) {
 
 	if err := h.domain.DeleteDomain(ctx, domain); err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "failed to delete domain", err)
-		errorResponse(c, getCode(err), err.Error())
+		errCtx := dto.FromError(err)
+		errorResponse(c, errCtx.Code, errCtx.Message)
 		return
 	}
 

@@ -36,10 +36,10 @@ func main() {
 	scamType := "phishing"
 	verifiedBy := "Admin"
 	verificationMethod := "manual"
-	riskScore := "85.5"
+	riskScore := 85.6
 
 	// 1. CreateDomain
-	res, err := domRepo.CreateDomain(ctx, entity.CreateDomainParams{
+	res, err := domRepo.CreateDomain(ctx, &entity.CreateDomainParams{
 		Domain:             "example.com",
 		Status:             "scam",
 		CompanyName:        &company,
