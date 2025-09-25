@@ -2,12 +2,12 @@ package handler
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/ItsXomyak/scam-list/internal/adapter/http/handler/dto"
 	"github.com/ItsXomyak/scam-list/internal/domain/entity"
 	"github.com/ItsXomyak/scam-list/pkg/logger"
+	"github.com/ItsXomyak/scam-list/pkg/utils"
 	"github.com/ItsXomyak/scam-list/pkg/validator"
 	"github.com/gin-gonic/gin"
 )
@@ -38,9 +38,17 @@ func (h *AdminPanel) CreateDomain(c *gin.Context) {
 
 	req := &dto.CreateDomainRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
-		badRequestResponse(c, fmt.Errorf("pizdez: %w", err).Error())
+		badRequestResponse(c, err.Error())
 		return
 	}
+
+	// Extracting domain from the request
+	cleanDomain, err := utils.ExtractDomain(req.Domain)
+	if err != nil {
+		badRequestResponse(c, err.Error())
+		return
+	}
+	req.Domain = cleanDomain
 
 	createReq := dto.FromCreateRequestToInternal(req)
 
@@ -55,7 +63,6 @@ func (h *AdminPanel) CreateDomain(c *gin.Context) {
 	r, err := h.domain.CreateDomain(ctx, createReq)
 	if err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "failed to create domain", err)
-
 		errCtx := dto.FromError(err)
 		errorResponse(c, errCtx.Code, errCtx.Message)
 		return
@@ -85,6 +92,9 @@ func (h *AdminPanel) GetAllDomains(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"domains": dto.ToBatchDomainResponse(all),
+		"metadata": gin.H{
+			"total": len(all),
+		},
 	})
 }
 
@@ -100,7 +110,6 @@ func (h *AdminPanel) GetDomain(c *gin.Context) {
 	d, err := h.domain.GetDomain(ctx, domain)
 	if err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "failed to get domain", err)
-
 		errCtx := dto.FromError(err)
 		errorResponse(c, errCtx.Code, errCtx.Message)
 		return
@@ -177,7 +186,6 @@ func (h *AdminPanel) PatchDomain(c *gin.Context) {
 	updated, err := h.domain.UpdateDomain(ctx, cur)
 	if err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "failed to update domain", err)
-
 		errCtx := dto.FromError(err)
 		errorResponse(c, errCtx.Code, errCtx.Message)
 		return
@@ -199,7 +207,6 @@ func (h *AdminPanel) DeleteDomain(c *gin.Context) {
 
 	if err := h.domain.DeleteDomain(ctx, domain); err != nil {
 		h.log.Error(logger.ErrorCtx(ctx, err), "failed to delete domain", err)
-
 		errCtx := dto.FromError(err)
 		errorResponse(c, errCtx.Code, errCtx.Message)
 		return

@@ -349,7 +349,7 @@ func (u *DomainRepository) UpdateDomain(ctx context.Context, updated *entity.Dom
 		&scamType,
 		&verifiedBy,
 		&verificationMethod,
-		riskScoreText,
+		&riskScoreText,
 		&reasons,
 		&metadataRaw,
 		&createdAt,

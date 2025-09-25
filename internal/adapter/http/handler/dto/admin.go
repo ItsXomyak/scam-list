@@ -70,12 +70,10 @@ func FromCreateRequestToInternal(req *CreateDomainRequest) *entity.CreateDomainP
 }
 
 func ToBatchDomainResponse(d []*entity.Domain) []*DomainResponse {
-	res := make([]*DomainResponse, len(d))
-
+	res := make([]*DomainResponse, 0, len(d))
 	for _, v := range d {
 		res = append(res, ToDomainResponse(v))
 	}
-
 	return res
 }
 
