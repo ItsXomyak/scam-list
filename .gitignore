@@ -29,3 +29,4 @@ lerna-debug.log*
 *.p12
 *.pfx
 *.cer
+responses/

@@ -1,0 +1,8 @@
+curl -X POST http://localhost:4000/parse-domain \
+     -H "Content-Type: application/json" \
+     -d '{"domain": "vk-com"}'
+
+
+curl -X POST http://localhost:4001/parse-domain \
+     -H "Content-Type: application/json" \
+     -d '{"domain": "youtube.com"}'

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 URL="http://localhost:4000/parse-domain"
-DOMAIN="vk-com"
+DOMAIN="youtube-com"
 OUTDIR="./responses"
 
 # Создаём папку для результатов (если её нет)
@@ -13,7 +13,7 @@ do
   curl -s -X POST "$URL" \
        -H "Content-Type: application/json" \
        -d "{\"domain\": \"$DOMAIN\"}" \
-       > "$OUTDIR/response_$i.txt" &
+       > "$OUTDIR/response_$i.json" &
 done
 
 # Ждём завершения всех фоновых процессов
