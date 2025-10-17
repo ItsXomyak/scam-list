@@ -1,0 +1,155 @@
+{
+	"info": {
+		"_postman_id": "f1038964-ca9d-4ffc-8285-76b22a4f1080",
+		"name": "scam-list",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "38774679"
+	},
+	"item": [
+		{
+			"name": "domain",
+			"item": [
+				{
+					"name": "domain create",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"domain\": \"asdas.com\",\n  \"status\": \"suspicious\"\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/admin/domain/create",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"admin",
+								"domain",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "domain all",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"domain\": \"temu.com\",\n  \"status\": \"scam\",\n  \"company_name\": \"Example Ltd\",\n  \"country\": \"kz\",\n  \"scam_sources\": [\"phishing_report\", \"user_submission\"],\n  \"scam_type\": \"phishing\",\n  \"verified_by\": \"admin\",\n  \"verification_method\": \"manual_review\",\n  \"risk_score\": 16.6,\n  \"reasons\": [\"suspicious activity\", \"reported by multiple users\"],\n  \"metadata\": [\n    { \"key\": \"ip_address\", \"value\": \"192.168.1.10\" },\n    { \"key\": \"note\", \"value\": \"Domain flagged in 2025-09 scan\" }\n  ]\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/admin/domain",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"admin",
+								"domain"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "domain by domain",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{host_url}}/admin/domain/t.com",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"admin",
+								"domain",
+								"t.com"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "domain update",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"risk_score\": 80\n}\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/admin/domain/asdas.com",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"admin",
+								"domain",
+								"asdas.com"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "domain delete",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{host_url}}/admin/domain/temu.com",
+							"host": [
+								"{{host_url}}"
+							],
+							"path": [
+								"admin",
+								"domain",
+								"temu.com"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "host_url",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
